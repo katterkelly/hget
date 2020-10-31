@@ -1,9 +1,9 @@
-package main
+package hget
 
 import (
-	"testing"
 	"os/user"
 	"path/filepath"
+	"testing"
 )
 
 func TestPartCalculate(t *testing.T) {

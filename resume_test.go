@@ -1,4 +1,4 @@
-package main
+package hget
 
 import "testing"
 

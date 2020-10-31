@@ -1,11 +1,11 @@
-package main
+package hget
 
 import (
-	"testing"
 	"path/filepath"
+	"testing"
 )
 
-func TestFilterIpV4(t *testing.T){
+func TestFilterIpV4(t *testing.T) {
 }
 
 func TestFolderOfPanic1(t *testing.T) {

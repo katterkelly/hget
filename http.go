@@ -1,4 +1,4 @@
-package main
+package hget
 
 import (
 	"crypto/tls"
@@ -29,14 +29,14 @@ var (
 )
 
 type HttpDownloader struct {
-	url       string
-	file      string
-	par       int64
+	Url       string
+	File      string
+	Par       int64
 	len       int64
 	ips       []string
 	skipTls   bool
-	parts     []Part
-	resumable bool
+	Parts     []Part
+	Resumable bool
 }
 
 func NewHttpDownloader(url string, par int, skipTls bool) *HttpDownloader {
@@ -89,14 +89,14 @@ func NewHttpDownloader(url string, par int, skipTls bool) *HttpDownloader {
 
 	file := filepath.Base(url)
 	ret := new(HttpDownloader)
-	ret.url = url
-	ret.file = file
-	ret.par = int64(par)
+	ret.Url = url
+	ret.File = file
+	ret.Par = int64(par)
 	ret.len = len
 	ret.ips = ipstr
 	ret.skipTls = skipTls
-	ret.parts = partCalculate(int64(par), len, url)
-	ret.resumable = resumable
+	ret.Parts = partCalculate(int64(par), len, url)
+	ret.Resumable = resumable
 
 	return ret
 }
@@ -134,15 +134,15 @@ func (d *HttpDownloader) Do(doneChan chan bool, fileChan chan string, errorChan 
 
 	if DisplayProgressBar() {
 		bars = make([]*pb.ProgressBar, 0)
-		for i, part := range d.parts {
-			newbar := pb.New64(part.RangeTo - part.RangeFrom).SetUnits(pb.U_BYTES).Prefix(color.YellowString(fmt.Sprintf("%s-%d", d.file, i)))
+		for i, part := range d.Parts {
+			newbar := pb.New64(part.RangeTo - part.RangeFrom).SetUnits(pb.U_BYTES).Prefix(color.YellowString(fmt.Sprintf("%s-%d", d.File, i)))
 			bars = append(bars, newbar)
 		}
 		barpool, err = pb.StartPool(bars...)
 		FatalCheck(err)
 	}
 
-	for i, p := range d.parts {
+	for i, p := range d.Parts {
 		ws.Add(1)
 		go func(d *HttpDownloader, loop int64, part Part) {
 			defer ws.Done()
@@ -160,13 +160,13 @@ func (d *HttpDownloader) Do(doneChan chan bool, fileChan chan string, errorChan 
 			}
 
 			//send request
-			req, err := http.NewRequest("GET", d.url, nil)
+			req, err := http.NewRequest("GET", d.Url, nil)
 			if err != nil {
 				errorChan <- err
 				return
 			}
 
-			if d.par > 1 { //support range download just in case parallel factor is over 1
+			if d.Par > 1 { //support range download just in case parallel factor is over 1
 				req.Header.Add("Range", ranges)
 				if err != nil {
 					errorChan <- err
@@ -202,7 +202,7 @@ func (d *HttpDownloader) Do(doneChan chan bool, fileChan chan string, errorChan 
 			for {
 				select {
 				case <-interruptChan:
-					stateSaveChan <- Part{Url: d.url, Path: part.Path, RangeFrom: current + part.RangeFrom, RangeTo: part.RangeTo}
+					stateSaveChan <- Part{Url: d.Url, Path: part.Path, RangeFrom: current + part.RangeFrom, RangeTo: part.RangeTo}
 					return
 				default:
 					written, err := io.CopyN(writer, resp.Body, 100)
